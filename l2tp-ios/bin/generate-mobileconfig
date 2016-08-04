@@ -1,0 +1,76 @@
+#!/bin/sh
+
+HOST=`curl --silent ipecho.net/plain`
+
+PROFILE_NAME="Databox L2TP/IPSec VPN Profile"
+PROFILE_IDENTIFIER=$(echo -n "${HOST}." | tac -s. | sed 's/\.$//g')
+PROFILE_UUID=$(hostname)
+
+CONN_NAME="My DB L2TP VPN"
+CONN_IDENTIFIER="${PROFILE_IDENTIFIER}.shared-configuration"
+CONN_USERNAME=`cat /etc/ppp/chap-secrets | tail -n1 | awk '{print $1}' | sed 's/"//g'`
+CONN_PASSWD=`cat /etc/ppp/chap-secrets | tail -n1 | awk '{print $3}' | sed 's/"//g'`
+#CONN_SHARED_SECRET=$(cat /etc/ipsec.secrets | tail -n1 | awk '{print $5}' | sed 's/"//g') # sed 's/.*"\(.*\)"/\1/g')
+CONN_SHARED_SECRET=$(cat /etc/ipsec.secrets | sed 's/.*"\(.*\)"/\1/g')
+CONN_UUID=$(uuidgen)
+CONN_HOST=$HOST
+
+cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadDisplayName</key>
+    <string>$PROFILE_NAME</string>
+    <key>PayloadIdentifier</key>
+    <string>$PROFILE_IDENTIFIER</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>$PROFILE_UUID</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadDescription</key>
+            <string>Configures L2TP VPN settings</string>
+            <key>PayloadDisplayName</key>
+            <string>DB L2TP VPN</string>
+            <key>PayloadIdentifier</key>
+            <string>$CONN_IDENTIFIER</string>
+            <key>PayloadType</key>
+            <string>com.apple.vpn.managed</string>
+            <key>PayloadUUID</key>
+            <string>$CONN_UUID</string>
+            <key>PayloadVersion</key>
+            <real>1</real>
+            <key>UserDefinedName</key>
+            <string>$CONN_NAME</string>
+            <key>OverridePrimary</key>
+            <integer>1</integer>
+            <key>VPNType</key>
+            <string>L2TP</string>
+            <key>IPSec</key>
+            <dict>
+                <key>AuthenticationMethod</key>
+                <string>SharedSecret</string>
+                <key>LocalIdentifierType</key>
+                <string>KeyID</string>
+                <key>SharedSecret</key>
+                <data>$CONN_SHARED_SECRET</data>
+            </dict>
+            <key>PPP</key>
+            <dict>
+                <key>AuthName</key>
+                <string>$CONN_USERNAME</string>
+                <key>AuthPassword</key>
+                <string>$CONN_PASSWD</string>
+                <key>CommRemoteAddress</key>
+                <string>$CONN_HOST</string>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>
+EOF
