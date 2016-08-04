@@ -1,5 +1,5 @@
-FROM debian:jessie
-MAINTAINER Roger Stark <rho.ajax@gmail.com>
+FROM resin/rpi-raspbian:jessie
+MAINTAINER Lin Song <linsongui@gmail.com>
 
 ENV REFRESHED_AT 2016-06-21
 ENV SWAN_VER 3.17
@@ -12,7 +12,6 @@ RUN apt-get -yqq update \
          libcap-ng-dev libcap-ng-utils libselinux1-dev \
          libcurl4-nss-dev libsystemd-dev flex bison gcc make \
          libunbound-dev libnss3-tools libevent-dev xl2tpd xmlto \
-	 curl uuid-runtime \
     && apt-get -y clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -27,12 +26,11 @@ RUN wget -t 3 -T 30 -nv -O "libreswan-${SWAN_VER}.tar.gz" "https://download.libr
     && make -s install \
     && rm -rf "/opt/src/libreswan-${SWAN_VER}"
 
-ADD  ./bin/* /usr/bin/
-RUN chmod 755 /usr/bin/run.sh \
-    && chmod 755 /usr/bin/generate-mobileconfig
+COPY ./run.sh /run.sh
+RUN chmod 755 /run.sh
 
 EXPOSE 500/udp 4500/udp
 
 VOLUME ["/lib/modules"]
 
-CMD ["/usr/bin/run.sh"]
+CMD ["/run.sh"]
