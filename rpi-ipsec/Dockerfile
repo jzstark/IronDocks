@@ -1,5 +1,5 @@
 FROM resin/rpi-raspbian:jessie
-MAINTAINER Lin Song <linsongui@gmail.com>
+MAINTAINER Roger Stark <rho.ajax@gmail.com>
 
 ENV REFRESHED_AT 2016-06-21
 ENV SWAN_VER 3.17
@@ -26,8 +26,9 @@ RUN wget -t 3 -T 30 -nv -O "libreswan-${SWAN_VER}.tar.gz" "https://download.libr
     && make -s install \
     && rm -rf "/opt/src/libreswan-${SWAN_VER}"
 
-COPY ./run.sh /run.sh
-RUN chmod 755 /run.sh
+ADD  ./bin/* /usr/bin/
+RUN chmod 755 /usr/bin/run.sh \
+ && chmod 755 /usr/bin/generate-mobileconfig
 
 EXPOSE 500/udp 4500/udp
 
