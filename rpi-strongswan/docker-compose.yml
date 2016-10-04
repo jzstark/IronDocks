@@ -1,0 +1,22 @@
+version: '2'
+services:
+  strongswan:
+    image: matrixanger/strongswan
+    container_name: vimagickss
+    ports:
+      - 500:500/udp
+      - 4500:4500/udp
+    volumes:
+      - /lib/modules:/lib/modules
+      - /etc/localtime:/etc/localtime
+    environment:
+      - VPN_DOMAIN=178.62.33.140
+      - VPN_NETWORK=10.20.30.0/24
+      - LAN_NETWORK=192.168.0.0/16
+      - VPN_USER=databox
+      - VPN_PSK=654321
+      - VPN_PASSWORD=123456
+      - VPN_P12_PASSWORD=123456
+    tmpfs: /run
+    privileged: yes
+    restart: always
